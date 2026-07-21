@@ -128,7 +128,7 @@
 
             <div id="rewrite-section" class="hidden">
                 <p style="color: #ffca28; margin-top: 10px;">إجابة صحيحة! أعد كتابة الكلمة الآن للتثبيت:</p>
-                <input type="text" id="user-input" placeholder="اكتب الكلمة بالإنجليزية هنا...">
+                <input type="text" id="user-input" placeholder="اكتب الكلمة بالإنجليزية هنا..." onkeypress="handleKeyPress(event)">
                 <button class="btn" onclick="checkRewrite()">تأكيد الكتابة</button>
             </div>
 
@@ -137,7 +137,7 @@
                     <p style="color: #aaa; font-size: 12px; direction: rtl;">مثال في جملة:</p>
                     <p id="sentence-text" style="font-size: 18px; color: #fff;"></p>
                 </div>
-                <button class="btn" onclick="nextQuestion()">السؤال التالي</button>
+                <button class="btn" id="next-btn" onclick="nextQuestion()">السؤال التالي</button>
             </div>
 
             <p id="feedback-text" class="feedback"></p>
@@ -145,29 +145,28 @@
     </div>
 
     <script>
-        // مصفوفة الكلمات الكاملة والمحدثة
         const words = [
-            // الصفات (Adjectives)
+            // الصفات
             { ar: "غضبان", en: "angry", sentence: "He was very angry with me." },
             { ar: "جميل", en: "beautiful", sentence: "It is a beautiful flower." },
             { ar: "شجاع", en: "brave", sentence: "The brave soldier protected the city." },
             { ar: "جبان", en: "coward", sentence: "Don't be a coward, face your fear." },
             { ar: "حذر / محترس", en: "careful", sentence: "Be careful when driving in the rain." },
             { ar: "غير مبالي / مهمل", en: "careless", sentence: "He lost his keys because he was careless." },
-            { ar: "ذكي", en: "clever", sentence: "She is a clever student." },
-            { ar: "جذاب / لطيف", en: "cute", sentence: "Look at that cute little puppy." },
-            { ar: "خطير", en: "dangerous", sentence: "A lion is a dangerous animal." },
+            { ar: "ذكي", en: "clever", sentence: "She is a very clever student." },
+            { ar: "جذاب / كيوت", en: "cute", sentence: "Look at that cute puppy!" },
+            { ar: "خطير", en: "dangerous", sentence: "The lion is a dangerous animal." },
             { ar: "سعيد", en: "happy", sentence: "I am very happy to see you." },
             { ar: "متحمس", en: "excited", sentence: "They are excited about the trip." },
             { ar: "مشهور", en: "famous", sentence: "He is a famous actor." },
             { ar: "لطيف / ودود", en: "friendly", sentence: "Our new neighbor is very friendly." },
             { ar: "محظوظ", en: "lucky", sentence: "You are lucky to have good friends." },
-            { ar: "غير محظوظ", en: "unlucky", sentence: "He was unlucky to lose the match." },
+            { ar: "سيئ الحظ", en: "unlucky", sentence: "He was unlucky to miss the train." },
             { ar: "قبيح", en: "ugly", sentence: "That was an ugly incident." },
-            { ar: "كبير السن / قديم", en: "old", sentence: "We should respect old people." },
-            { ar: "صغير السن / شاب", en: "young", sentence: "The young boy plays football well." },
+            { ar: "كبير في السن / قديم", en: "old", sentence: "My grandfather is an old man." },
+            { ar: "صغير في السن / شاب", en: "young", sentence: "The young boy plays football well." },
 
-            // العائلة والأقارب (Family)
+            // العائلة والأشخاص
             { ar: "أب", en: "father", sentence: "My father works at a school." },
             { ar: "أم", en: "mother", sentence: "My mother cooks delicious food." },
             { ar: "أخ", en: "brother", sentence: "I played video games with my brother." },
@@ -182,10 +181,10 @@
             { ar: "حفيدة", en: "granddaughter", sentence: "She bought a gift for her granddaughter." },
             { ar: "زوج الأم", en: "stepfather", sentence: "His stepfather is a nice man." },
             { ar: "زوجة الأب", en: "stepmother", sentence: "Cinderella had a strict stepmother." },
-            { ar: "حماة (والدة الزوج/الزوجة)", en: "mother-in-law", sentence: "My mother-in-law invited us to dinner." },
             { ar: "حماه (والد الزوج/الزوجة)", en: "father-in-law", sentence: "I went fishing with my father-in-law." },
+            { ar: "حماة (والدة الزوج/الزوجة)", en: "mother-in-law", sentence: "My mother-in-law invited us to dinner." },
 
-            // المهن والشخصيات (Jobs & People)
+            // المهن والشخصيات
             { ar: "محاسب", en: "accountant", sentence: "An accountant manages financial records." },
             { ar: "ممثل", en: "actor", sentence: "The actor played his role well." },
             { ar: "ممثلة", en: "actress", sentence: "She is a talented actress." },
@@ -195,23 +194,23 @@
             { ar: "حلاق", en: "barber", sentence: "I need to go to the barber today." },
             { ar: "جار", en: "neighbour", sentence: "Our neighbour helped us move the furniture." },
             { ar: "جزار", en: "butcher", sentence: "The butcher sells fresh meat." },
-            { ar: "لص منازل / سارق", en: "burglar", sentence: "The burglar broke into the house." },
-            { ar: "مجرم", en: "criminal", sentence: "The police caught the criminal." },
+            { ar: "لص منازل", en: "burglar", sentence: "The burglar entered the house through the window." },
             { ar: "طاهي", en: "chef", sentence: "The chef prepared a wonderful meal." },
             { ar: "نجار", en: "carpenter", sentence: "The carpenter made a nice wooden table." },
+            { ar: "مجرم", en: "criminal", sentence: "The police caught the criminal." },
             { ar: "ضابط شرطة", en: "police officer", sentence: "The police officer stopped the car." },
-            { ar: "طبيب أسنان", en: "dentist", sentence: "I have an appointment with the dentist." },
-            { ar: "مهندس", en: "engineer", sentence: "The engineer designed a new bridge." },
-            { ar: "نادل (جرسون)", en: "waiter", sentence: "The waiter brought our food." },
-            { ar: "نادلة", en: "waitress", sentence: "The waitress was very polite." },
-            { ar: "خياط", en: "tailor", sentence: "The tailor made a new suit for me." },
-            { ar: "رجل إطفاء", en: "firefighter", sentence: "The firefighter saved the family from the fire." },
-            { ar: "مدرب", en: "coach", sentence: "The football coach gives clear instructions." },
+            { ar: "طبيب أسنان", en: "Dentist", sentence: "I went to the dentist to check my teeth." },
+            { ar: "مهندس", en: "engineer", sentence: "The engineer designed a big bridge." },
+            { ar: "نادل (جرسون)", en: "waiter", sentence: "The waiter brought us our drinks." },
+            { ar: "نادلة (جرسونة)", en: "waitress", sentence: "The waitress was very polite." },
+            { ar: "خياط", en: "tailor", sentence: "The tailor made a custom suit for me." },
+            { ar: "إطفائي", en: "firefighter", sentence: "The firefighter put out the blaze." },
+            { ar: "مدرب", en: "coach", sentence: "The coach trained the team for the match." },
             { ar: "محامي", en: "lawyer", sentence: "The lawyer defended his client in court." },
-            { ar: "جندي", en: "soldier", sentence: "The soldier is fighting for his country." },
-            { ar: "جيش", en: "army", sentence: "He joined the army last year." },
+            { ar: "جيش", en: "army", sentence: "He joined the army after high school." },
+            { ar: "جندي", en: "soldier", sentence: "The soldier showed great bravery." },
 
-            // الفواكه (Fruits)
+            // الفواكه
             { ar: "أناناس", en: "pineapple", sentence: "Pineapple juice is very refreshing." },
             { ar: "برقوق / بخارة", en: "plum", sentence: "She ate a ripe purple plum." },
             { ar: "فراولة", en: "strawberry", sentence: "I love strawberry ice cream." },
@@ -219,15 +218,15 @@
             { ar: "خوخ", en: "peach", sentence: "This peach is very soft and sweet." },
             { ar: "كمثرى", en: "pear", sentence: "He sliced a pear for breakfast." },
             { ar: "عنب", en: "grapes", sentence: "I bought fresh sweet grapes." },
-            { ar: "ليمون أصفر", en: "lemon", sentence: "Lemon tastes very sour." },
-            { ar: "ليمون أخضر", en: "lime", sentence: "Add some lime to the juice." },
-            { ar: "يوسفي", en: "tangerine", sentence: "He peeled a sweet tangerine for lunch." },
-            { ar: "كرز", en: "cherries", sentence: "These cherries are sweet and red." },
+            { ar: "ليمون حامض", en: "lemon", sentence: "Lemon tastes very sour." },
+            { ar: "ليمون أخضر", en: "lime", sentence: "Add some lime juice to the salad." },
+            { ar: "يوسفي", en: "tangerine", sentence: "Peeled a sweet tangerine for lunch." },
+            { ar: "كرز", en: "cherries", sentence: "Cherries are my favorite summer fruit." },
 
-            // الأثاث والأدوات (Furniture & Items)
+            // الأثاث وأدوات الدراسة/المكتب
             { ar: "طاولة", en: "table", sentence: "The food is on the table." },
             { ar: "مروحة", en: "fan", sentence: "Turn on the fan, please." },
-            { ar: "أريكة / كنب", en: "sofa", sentence: "We sat on the comfortable sofa." },
+            { ar: "كنب / أريكة", en: "couch sofa", sentence: "We sat on the comfortable couch sofa." },
             { ar: "سبورة سوداء", en: "black board", sentence: "The teacher wrote on the black board." },
             { ar: "كرسي", en: "chair", sentence: "Please sit on this chair." },
             { ar: "كرسي بذراعين", en: "armchair", sentence: "Grandpa was sleeping in his armchair." },
@@ -235,41 +234,51 @@
             { ar: "رف", en: "shelf", sentence: "Put the box on the top shelf." },
             { ar: "جدار", en: "wall", sentence: "There is a nice painting on the wall." },
             { ar: "ساعة حائط", en: "clock", sentence: "The clock on the wall says 5 o'clock." },
-            { ar: "تقويم / النتيجة", en: "calendar", sentence: "Check the date on the calendar." },
-            { ar: "سرير", en: "bed", sentence: "I sleep on a comfortable bed." },
-            { ar: "بجوار / بجانب", en: "next to", sentence: "The chair is next to the table." },
-            { ar: "ممحاة / محاية", en: "eraser", sentence: "Use an eraser to fix the mistake." },
+            { ar: "تقويم", en: "calendar", sentence: "Check the date on the calendar." },
+            { ar: "سرير", en: "bed", sentence: "I like to read in my bed before sleeping." },
+            { ar: "بجوار", en: "next to", sentence: "The nightstand is next to the bed." },
+            { ar: "مساحة / ممحاة", en: "eraser", sentence: "Use an eraser to fix the mistake." },
             { ar: "قاموس", en: "dictionary", sentence: "Look up the word in the dictionary." },
-            { ar: "براية أقلام", en: "pencil sharpener", sentence: "I need a pencil sharpener for my pencil." },
+            { ar: "براية قلم رصاص", en: "pencil sharpener", sentence: "My pencil is broken, I need a pencil sharpener." },
             { ar: "سبورة بيضاء", en: "white board", sentence: "Write the answer on the white board." },
             { ar: "مصباح / أباجورة", en: "lamp", sentence: "The desk lamp is very bright." },
-            { ar: "سقف", en: "roof", sentence: "There is a bird on the roof." },
-            { ar: "كشكول / دفتر", en: "notebook", sentence: "Write your notes in the notebook." },
-            { ar: "قلم حبر", en: "ink pen", sentence: "Sign the document using an ink pen." },
+            { ar: "سقف", en: "roof", sentence: "The roof protects us from the rain." },
+            { ar: "دفتر / كشكول", en: "notebook", sentence: "Write your notes in the notebook." },
+            { ar: "قلم حبر", en: "ink pen", sentence: "Sign the paper with a blue ink pen." },
 
-            // الملابس والأفعال المتعلقة بها (Clothing & Related Verbs)
-            { ar: "معطف / كوت", en: "coat", sentence: "Put on your coat, it is cold outside." },
+            // الملابس والأفعال المضافة
+            { ar: "معطف", en: "coat", sentence: "Put on your coat, it is cold outside." },
             { ar: "قميص", en: "shirt", sentence: "He is wearing a white shirt." },
             { ar: "بدلة", en: "suit", sentence: "He wore a black suit for the wedding." },
-            { ar: "ربطة عنق (كرافتة)", en: "tie", sentence: "He learned how to tie his tie." },
-            { ar: "ربطة عنق فراشة (فراشة)", en: "bow tie", sentence: "He looks handsome in a bow tie." },
-            { ar: "سترة بدون أكمام (سديري)", en: "vest", sentence: "He wore a leather vest over his shirt." },
-            { ar: "تنورة / تنورة نسائية", en: "skirt", sentence: "She bought a blue skirt." },
-            { ar: "يخيط", en: "sew", sentence: "My grandmother taught me how to sew." },
-            { ar: "سترة / جاكيت", en: "jacket", sentence: "Don't forget to wear your jacket." },
-            { ar: "بنطال (بنطلون)", en: "a pair of pants", sentence: "I bought a new pair of pants yesterday." },
+            { ar: "رابطة عنق (كرافتة)", en: "tie", sentence: "He learned how to tie his necktie." },
+            { ar: "بابيون (ربطة عنق فراشة)", en: "bow tie", sentence: "He wore a tuxedo with a red bow tie." },
+            { ar: "صديرية / فيست", en: "vest", sentence: "The vest matches his suit." },
+            { ar: "تنورة / جيب", en: "skirt", sentence: "She wore a blue skirt today." },
+            { ar: "يطرز / يخيط", en: "sew", sentence: "My grandmother taught me how to sew." },
+            { ar: "سترة / جاكيت", en: "jacket", sentence: "Take a jacket with you tonight." },
+            { ar: "بنطال (بنطلون)", en: "a pair of pants", sentence: "I bought a pair of pants yesterday." },
             { ar: "زي موحد / يونيفورم", en: "uniform", sentence: "Students wear a school uniform." },
-            { ar: "قميص رياضي (سويت شيرت)", en: "sweatshirt", sentence: "This sweatshirt keeps me warm." },
-            { ar: "سترة صوفية (بلوفر)", en: "sweater", sentence: "She knitted a wool sweater." },
-            { ar: "حذاء برقبة (بسطار / جزمة)", en: "boots", sentence: "He wore thick boots for hiking." }
+            { ar: "سترة قطنية ثقيلة", en: "sweatshirt", sentence: "A sweatshirt keeps you warm during workouts." },
+            { ar: "بلوفر / سترة صوفية", en: "sweater", sentence: "She knitted a cozy sweater." },
+            { ar: "حذاء برقبة (بوت)", en: "boots", sentence: "Wear your leather boots in winter." }
         ];
 
+        let availableWords = [];
         let currentQuestion = {};
 
         function startQuiz() {
+            availableWords = [...words];
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('quiz-screen').classList.remove('hidden');
             nextQuestion();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
         }
 
         function getRandomOptions(correctEn) {
@@ -280,23 +289,27 @@
                     options.push(randomWord);
                 }
             }
-            return options.sort(() => Math.random() - 0.5); // خلط الخيارات
+            return shuffleArray(options);
         }
 
         function nextQuestion() {
-            // إعادة ضبط الشاشات
+            if (availableWords.length === 0) {
+                availableWords = [...words];
+            }
+
             document.getElementById('rewrite-section').classList.add('hidden');
             document.getElementById('result-section').classList.add('hidden');
             document.getElementById('feedback-text').innerText = "";
             document.getElementById('user-input').value = "";
             document.getElementById('options-container').innerHTML = "";
 
-            // اختيار كلمة عشوائية
-            currentQuestion = words[Math.floor(Math.random() * words.length)];
+            let randomIndex = Math.floor(Math.random() * availableWords.length);
+            currentQuestion = availableWords[randomIndex];
+            
+            availableWords.splice(randomIndex, 1);
 
             document.getElementById('question-text').innerText = `ما معنى كلمة (${currentQuestion.ar}) بالإنجليزي؟`;
 
-            // إنتاج الخيارات
             let options = getRandomOptions(currentQuestion.en);
             let optionsContainer = document.getElementById('options-container');
 
@@ -314,8 +327,9 @@
             if (selected === currentQuestion.en) {
                 feedback.innerText = "ممتاز! إجابة صحيحة.";
                 feedback.className = "feedback correct";
-                document.getElementById('options-container').innerHTML = ""; // إخفاء الخيارات
-                document.getElementById('rewrite-section').classList.remove('hidden'); // إظهار مرحلة الكتابة
+                document.getElementById('options-container').innerHTML = ""; 
+                document.getElementById('rewrite-section').classList.remove('hidden');
+                document.getElementById('user-input').focus();
             } else {
                 feedback.innerText = "إجابة خاطئة، حاول مرة أخرى!";
                 feedback.className = "feedback wrong";
@@ -331,12 +345,17 @@
                 feedback.className = "feedback correct";
                 document.getElementById('rewrite-section').classList.add('hidden');
                 
-                // عرض الجملة
                 document.getElementById('sentence-text').innerText = currentQuestion.sentence;
                 document.getElementById('result-section').classList.remove('hidden');
             } else {
                 feedback.innerText = `حاول مجدداً، الإملاء الصحيح هو: (${currentQuestion.en})`;
                 feedback.className = "feedback wrong";
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                checkRewrite();
             }
         }
     </script>
