@@ -1,0 +1,98 @@
+// مصفوفة الكلمات الكاملة
+const words = [
+    // ... (نفس مصفوفة الكلمات الخاصة بك)
+];
+
+let currentQuestion = {};
+let previousIndex = -1;
+
+function startQuiz() {
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('quiz-screen').classList.remove('hidden');
+    
+    // التسمع لضغط زر Enter في حقل الكتابة
+    document.getElementById('user-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            checkRewrite();
+        }
+    });
+
+    nextQuestion();
+}
+
+function getRandomOptions(correctEn) {
+    let options = [correctEn];
+    while (options.length < 4) {
+        let randomWord = words[Math.floor(Math.random() * words.length)].en;
+        if (!options.includes(randomWord)) {
+            options.push(randomWord);
+        }
+    }
+    return options.sort(() => Math.random() - 0.5);
+}
+
+function nextQuestion() {
+    document.getElementById('rewrite-section').classList.add('hidden');
+    document.getElementById('result-section').classList.add('hidden');
+    document.getElementById('feedback-text').innerText = "";
+    document.getElementById('user-input').value = "";
+    document.getElementById('options-container').innerHTML = "";
+
+    // ضمان عدم تكرار السؤال السابق مباشرة
+    let randomIndex;
+    do {
+        randomIndex = Math.floor(Math.random() * words.length);
+    } while (randomIndex === previousIndex && words.length > 1);
+    
+    previousIndex = randomIndex;
+    currentQuestion = words[randomIndex];
+
+    document.getElementById('question-text').innerText = `ما معنى كلمة (${currentQuestion.ar}) بالإنجليزي؟`;
+
+    let options = getRandomOptions(currentQuestion.en);
+    let optionsContainer = document.getElementById('options-container');
+
+    options.forEach(option => {
+        let btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = option;
+        btn.onclick = () => selectOption(option);
+        optionsContainer.appendChild(btn);
+    });
+}
+
+function selectOption(selected) {
+    let feedback = document.getElementById('feedback-text');
+    if (selected === currentQuestion.en) {
+        feedback.innerText = "ممتاز! إجابة صحيحة.";
+        feedback.className = "feedback correct";
+        document.getElementById('options-container').innerHTML = "";
+        
+        let rewriteSection = document.getElementById('rewrite-section');
+        rewriteSection.classList.remove('hidden');
+        
+        // التركيز التلقائي على حقل الإدخال
+        const inputField = document.getElementById('user-input');
+        inputField.focus();
+    } else {
+        feedback.innerText = "إجابة خاطئة، حاول مرة أخرى!";
+        feedback.className = "feedback wrong";
+    }
+}
+
+function checkRewrite() {
+    let userInput = document.getElementById('user-input').value.trim().toLowerCase();
+    let feedback = document.getElementById('feedback-text');
+
+    if (userInput === currentQuestion.en.toLowerCase()) {
+        feedback.innerText = "أحسنت! كتبت الكلمة بالشكل الصحيح.";
+        feedback.className = "feedback correct";
+        document.getElementById('rewrite-section').classList.add('hidden');
+        
+        document.getElementById('sentence-text').innerText = currentQuestion.sentence;
+        document.getElementById('result-section').classList.remove('hidden');
+    } else {
+        feedback.innerText = `حاول مجدداً، الإملاء الصحيح هو: (${currentQuestion.en})`;
+        feedback.className = "feedback wrong";
+    }
+}
