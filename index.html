@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعلم اللغة الإنجليزية يا وحش</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background-color: #1e1e1e;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            overflow: hidden;
+            border: 1px solid #333;
+            text-align: center;
+        }
+
+        /* الصفحة الرئيسية */
+        #welcome-screen {
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+        }
+
+        #welcome-screen h1 {
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            color: #4caf50;
+        }
+
+        #welcome-screen p {
+            font-size: 1.1rem;
+            color: #aaa;
+            margin-bottom: 40px;
+        }
+
+        .btn-main {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-main:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+        }
+
+        /* صفحة الأسئلة */
+        #quiz-screen {
+            display: none;
+            padding: 30px 20px;
+        }
+
+        .progress-bar {
+            background-color: #333;
+            border-radius: 10px;
+            height: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .progress {
+            background-color: #4caf50;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-box h2 {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            color: #f1f1f1;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            background-color: #2a2a2a;
+            color: white;
+            border: 2px solid #333;
+            padding: 15px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            direction: ltr;
+        }
+
+        .option-btn:hover {
+            border-color: #4caf50;
+            background-color: #333;
+        }
+
+        /* مرحلة الكتابة والمثال */
+        #typing-section {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .success-text {
+            color: #4caf50;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 12px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            border: 2px solid #4caf50;
+            background-color: #121212;
+            color: white;
+            text-align: center;
+            margin-bottom: 15px;
+            direction: ltr;
+        }
+
+        .example-box {
+            display: none;
+            background-color: #252525;
+            border-right: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: right;
+            border-radius: 4px;
+        }
+
+        .example-box p {
+            margin: 5px 0;
+            font-size: 1rem;
+        }
+
+        .example-en {
+            direction: ltr;
+            text-align: left;
+            color: #ffeb3b;
+            font-weight: bold;
+        }
+
+        .btn-next {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: none;
+            margin: 0 auto;
+        }
+
+        .btn-next:hover {
+            background-color: #0b7dda;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="welcome-screen">
+            <h1>مرحباً بك في منصة التعلم</h1>
+            <p>طور مهاراتك واحتؤف اللغة الإنجليزية خطوة بخطوة!</p>
+            <button class="btn-main" onclick="startQuiz()">ابدأ تعلم اللغة الإنجليزية الآن يا وحش</button>
+        </div>
+
+        <div id="quiz-screen">
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+
+            <div class="question-box">
+                <h2 id="question-text">ما معنى كلمة ...؟</h2>
+                <div class="options-grid" id="options-container"></div>
+            </div>
+
+            <div id="typing-section">
+                <p class="success-text">إجابة صحيحة! أحسنت 🔥</p>
+                <p>أعد صياغة/كتابة الكلمة بالإنجليزية لتأكيد الحفظ:</p>
+                <input type="text" id="user-input" placeholder="اكتب الكلمة هنا..." autocomplete="off">
+                
+                <div class="example-box" id="example-box">
+                    <p><strong>مثال على الجملة:</strong></p>
+                    <p class="example-en" id="example-en"></p>
+                    <p id="example-ar" style="color: #bbb;"></p>
+                </div>
+
+                <button class="btn-next" id="next-btn" onclick="nextQuestion()">السؤال التالي ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // قائمة الكلمات الكاملة المطلوبة
+        const dictionary = [
+            // الصفات
+            { ar: "غضبان", en: "angry", sentenceEn: "He was very angry with me.", sentenceAr: "كان غاضباً جداً مني." },
+            { ar: "جميل", en: "beautiful", sentenceEn: "She lives in a beautiful house.", sentenceAr: "هي تعيش في منزل جميل." },
+            { ar: "شجاع", en: "brave", sentenceEn: "The brave firefighter saved the cat.", sentenceAr: "أنقذ رجل الإطفاء الشجاع القطة." },
+            { ar: "جبان", en: "coward", sentenceEn: "Don't be a coward!", sentenceAr: "لا تكن جباناً!" },
+            { ar: "محترس / حذر", en: "careful", sentenceEn: "Be careful when you drive.", sentenceAr: "كن حذراً عندما تقود." },
+            { ar: "غير مبالي", en: "careless", sentenceEn: "He is careless with his money.", sentenceAr: "هو غير مبالٍ بأمواله." },
+            { ar: "ذكي", en: "clever", sentenceEn: "She is a clever student.", sentenceAr: "إنها طالبة ذكية." },
+            { ar: "جذاب / لطيف", en: "cute", sentenceEn: "Look at that cute puppy!", sentenceAr: "انظر إلى ذلك الجرو اللطيف!" },
+            { ar: "خطير", en: "dangerous", sentenceEn: "Lions are dangerous animals.", sentenceAr: "الأسود حیوانات خطيرة." },
+            { ar: "سعيد", en: "happy", sentenceEn: "I am so happy today.", sentenceAr: "أنا سعيد جداً اليوم." },
+            { ar: "متحمس", en: "excited", sentenceEn: "We are excited about the trip.", sentenceAr: "نحن متحمسون للرحلة." },
+            { ar: "مشهور", en: "famous", sentenceEn: "He is a famous actor.", sentenceAr: "هو ممثل مشهور." },
+            { ar: "لطيف / اجتماعي", en: "friendly", sentenceEn: "Our new neighbour is friendly.", sentenceAr: "جارنا الجديد ودود ومحترم." },
+            { ar: "محظوظ", en: "lucky", sentenceEn: "You are very lucky.", sentenceAr: "أنت محظوظ جداً." },
+            { ar: "تعيس / غير محظوظ", en: "unlucky", sentenceEn: "It was an unlucky day for him.", sentenceAr: "كان يوماً تعيساً بالنسبة له." },
+            { ar: "قبيح", en: "ugly", sentenceEn: "The story of the ugly duckling.", sentenceAr: "قصة الفرخ القبيح." },
+            { ar: "كبير سن", en: "old", sentenceEn: "My grandfather is very old.", sentenceAr: "جدي كبير جداً في السن." },
+            { ar: "صغير سن", en: "young", sentenceEn: "She is young and full of energy.", sentenceAr: "هي صغيرة السن ومفعمة بالنشاط." },
+            
+            // العائلة والأقارب
+            { ar: "أب", en: "father", sentenceEn: "My father is a doctor.", sentenceAr: "أبي طبيب." },
+            { ar: "أم", en: "mother", sentenceEn: "My mother cooks delicious food.", sentenceAr: "أمي تطبخ طعاماً لذيذاً." },
+            { ar: "الوالدين", en: "parents", sentenceEn: "I love my parents.", sentenceAr: "أنا أحب والديّ." },
+            { ar: "الجدين", en: "grandparents", sentenceEn: "We visit our grandparents every Friday.", sentenceAr: "نزور أجدادنا كل يوم جمعة." },
+            { ar: "أخ", en: "brother", sentenceEn: "My brother plays football.", sentenceAr: "أخي يلعب كرة القدم." },
+            { ar: "خال / عم", en: "uncle", sentenceEn: "My uncle bought a new car.", sentenceAr: "اشترى عمي/خالي سيارة جديدة." },
+            { ar: "خالة / عمتي", en: "aunt", sentenceEn: "Aunt Sarah makes great cakes.", sentenceAr: "العمة/الخالة سارة تصنع كعكاً رائعاً." },
+            { ar: "ابن / بنت عم (أو خال)", en: "cousin", sentenceEn: "My cousin is visiting us today.", sentenceAr: "ابن عمي يزورنا اليوم." },
+            { ar: "ابن", en: "son", sentenceEn: "He has a five-year-old son.", sentenceAr: "لديه ابن يبلغ من العمر خمس سنوات." },
+            { ar: "ابنة", en: "daughter", sentenceEn: "Her daughter loves drawing.", sentenceAr: "ابنتها تحب الرسم." },
+            { ar: "ابن أخت / أخ", en: "nephew", sentenceEn: "My nephew is very smart.", sentenceAr: "ابن أخي/أختي ذكي جداً." },
+            { ar: "ابنة أخت / أخ", en: "niece", sentenceEn: "I bought a gift for my niece.", sentenceAr: "اشتريت هدية لابنة أختي/أخي." },
+            { ar: "حفيد", en: "grandson", sentenceEn: "He loves his grandson.", sentenceAr: "هو يحب حفيده." },
+            { ar: "حفيدة", en: "granddaughter", sentenceEn: "Her granddaughter is very cute.", sentenceAr: "حفيدتها لطيفة جداً." },
+            { ar: "زوج الأم", en: "stepfather", sentenceEn: "My stepfather is very kind.", sentenceAr: "زوج أمي لطيف جداً." },
+            { ar: "زوجة الأب", en: "stepmother", sentenceEn: "Cinderella had a strict stepmother.", sentenceAr: "كان لسندريلا زوجة أب صارمة." },
+            { ar: "حماه (والدة الزوج/الزوجة)", en: "mother-in-law", sentenceEn: "My mother-in-law visited us.", sentenceAr: "زارتنا حماتي." },
+            { ar: "حمو (والد الزوج/الزوجة)", en: "father-in-law", sentenceEn: "My father-in-law is retired.", sentenceAr: "حمي متقاعد." },
+
+            // المهن
+            { ar: "محاسب", en: "accountant", sentenceEn: "The accountant works in an office.", sentenceAr: "المحاسب يعمل في مكتب." },
+            { ar: "ممثل", en: "actor", sentenceEn: "The actor played his role well.", sentenceAr: "أدى الممثل دوره بشكل جيد." },
+            { ar: "ممثلة", en: "actress", sentenceEn: "She is a famous actress.", sentenceAr: "إنها ممثلة مشهورة." },
+            { ar: "مؤلف", en: "author", sentenceEn: "The author wrote a new book.", sentenceAr: "كتب المؤلف كتاباً جديداً." },
+            { ar: "خباز", en: "baker", sentenceEn: "The baker bakes fresh bread.", sentenceAr: "الخباز يخبز الخبز الطازج." },
+            { ar: "موظف بنك", en: "banker", sentenceEn: "My friend works as a banker.", sentenceAr: "صديقي يعمل كموظف بنك." },
+            { ar: "حلاق", en: "barber", sentenceEn: "I need to go to the barber.", sentenceAr: "أحتاج الذهاب إلى الحلاق." },
+            { ar: "جار", en: "neighbour", sentenceEn: "Our neighbour is very quiet.", sentenceAr: "جارنا هادئ جداً." },
+            { ar: "جزار", en: "butcher", sentenceEn: "The butcher sells fresh meat.", sentenceAr: "الجزار يبيع اللحم الطازج." },
+            { ar: "لص / سارق", en: "burglar", sentenceEn: "The burglar broke into the house.", sentenceAr: "اقتحم اللص المنزل." },
+            { ar: "حرامي / مجرم", en: "criminal", sentenceEn: "The police caught the criminal.", sentenceAr: "قبضت الشرطة على المجرم." },
+            { ar: "طاهي / طباخ", en: "chef", sentenceEn: "The chef cooks delicious meals.", sentenceAr: "الطاهي يطبخ وجبات لذيذة." },
+            { ar: "نجار", en: "carpenter", sentenceEn: "The carpenter made a wooden table.", sentenceAr: "صنع النجار طاولة خشبية." },
+            { ar: "ضابط شرطة", en: "police officer", sentenceEn: "The police officer helps people.", sentenceAr: "ضابط الشرطة يساعد الناس." },
+            { ar: "طبيب أسنان", en: "dentist", sentenceEn: "I have an appointment with the dentist.", sentenceAr: "لدي موعد مع طبيب الأسنان." },
+            { ar: "مهندس", en: "engineer", sentenceEn: "The engineer designed the bridge.", sentenceAr: "صمم المهندس الجسر." },
+            { ar: "نادل (جرسون)", en: "waiter", sentenceEn: "The waiter brought our food.", sentenceAr: "أحضر النادل طعامنا." },
+            { ar: "نادلة", en: "waitress", sentenceEn: "The waitress was very polite.", sentenceAr: "كانت النادلة مهذبة جداً." },
+            { ar: "خياط", en: "tailor", sentenceEn: "The tailor is fixing my suit.", sentenceAr: "الخياط يصلح بدلتنا." },
+            { ar: "رجل إطفاء", en: "firefighter", sentenceEn: "The firefighter put out the fire.", sentenceAr: "أطفأ رجل الإطفاء الحريق." },
+            { ar: "مدرب", en: "coach", sentenceEn: "The coach trained the team.", sentenceAr: "يدرب المدرب الفريق." },
+            { ar: "محامي", en: "lawyer", sentenceEn: "The lawyer defended his client.", sentenceAr: "دافع المحامي عن موكله." },
+            { ar: "جندي", en: "soldier", sentenceEn: "The soldier is brave.", sentenceAr: "الجندي شجاع." },
+            { ar: "جيش", en: "army", sentenceEn: "He joined the army last year.", sentenceAr: "انضم إلى الجيش العام الماضي." },
+
+            // الفواكه
+            { ar: "فاكهة", en: "fruit", sentenceEn: "Eating fruit is good for health.", sentenceAr: "أكل الفاكهة مفيد للصحة." },
+            { ar: "أناناس", en: "pineapple", sentenceEn: "Pineapple is sweet and delicious.", sentenceAr: "الأناناس حلو ولذيذ." },
+            { ar: "برقوق / بخارة", en: "plum", sentenceEn: "I love fresh plum juice.", sentenceAr: "أحب عصير البرقوق الطازج." },
+            { ar: "فراولة", en: "strawberry", sentenceEn: "She loves strawberry ice cream.", sentenceAr: "هي تحب آيس كريم الفراولة." },
+            { ar: "حبحب / بطيخ", en: "watermelon", sentenceEn: "Watermelon is sweet in summer.", sentenceAr: "البطيخ حلو في الصيف." },
+            { ar: "خوخ", en: "peach", sentenceEn: "This peach is very soft.", sentenceAr: "هذه الخوخة طرية جداً." },
+            { ar: "كمثرى", en: "pear", sentenceEn: "Pears are my favorite fruit.", sentenceAr: "الكمثرى هي فاكهتي المفضلة." },
+            { ar: "عنب", en: "grapes", sentenceEn: "Green grapes are very tasty.", sentenceAr: "العنب الأخضر لذيذ جداً." },
+            { ar: "ليمون", en: "lemon", sentenceEn: "Lemon juice is refreshing.", sentenceAr: "عصير الليمون منعش." },
+            { ar: "ليمون أخضر", en: "lime", sentenceEn: "Add a squeeze of lime.", sentenceAr: "أضف عصرة ليمون أخضر." },
+            { ar: "يوسفي", en: "tangerine", sentenceEn: "Tangerine is easy to peel.", sentenceAr: "اليوسفي سهل التقشير." },
+            { ar: "كرز", en: "cherries", sentenceEn: "The cherries are dark red.", sentenceAr: "الكرز أحمر داكن." },
+
+            // الأدوات المنزلية والأثاث والمدرسة
+            { ar: "طاولة", en: "table", sentenceEn: "The book is on the table.", sentenceAr: "الكتاب على الطاولة." },
+            { ar: "مروحة", en: "fan", sentenceEn: "Turn on the fan, please.", sentenceAr: "شغّل المروحة من فضلك." },
+            { ar: "كنب / أريكة", en: "couch sofa", sentenceEn: "We sat on the couch sofa.", sentenceAr: "جلسنا على الكنبة." },
+            { ar: "سبورة سوداء", en: "black board", sentenceEn: "The teacher wrote on the black board.", sentenceAr: "كتب المعلم على السبورة السوداء." },
+            { ar: "كرسي", en: "chair", sentenceEn: "Sit on this chair.", sentenceAr: "اجلس على هذا الكرسي." },
+            { ar: "كرسي بذراع", en: "armchair", sentenceEn: "Grandpa is sitting in the armchair.", sentenceAr: "الجد يجلس على الكرسي ذي الذراعين." },
+            { ar: "خزانة الكتب", en: "bookcase", sentenceEn: "Put the books in the bookcase.", sentenceAr: "ضع الكتب في خزانة الكتب." },
+            { ar: "رف", en: "shelf", sentenceEn: "The clock is on the top shelf.", sentenceAr: "الساعة على الرف العلوي." },
+            { ar: "جدار", en: "wall", sentenceEn: "There is a painting on the wall.", sentenceAr: "توجد لوحة على الجدار." },
+            { ar: "ساعة حائط", en: "clock", sentenceEn: "Look at the wall clock.", sentenceAr: "انظر إلى ساعة الحائط." },
+            { ar: "تقويم / النتيجة", en: "calendar", sentenceEn: "Check the date on the calendar.", sentenceAr: "تحقق من التاريخ في التقويم." },
+            { ar: "سرير", en: "bed", sentenceEn: "I want to go to bed.", sentenceAr: "أريد الذهاب إلى السرير." },
+            { ar: "بجوار / بجانب", en: "next to", sentenceEn: "The shop is next to the bank.", sentenceAr: "المحل بجوار البنك." },
+            { ar: "مساحة / محاية", en: "eraser", sentenceEn: "Can I borrow your eraser?", sentenceAr: "هل يمكنني استعارة محايتك؟" },
+            { ar: "قاموس", en: "dictionary", sentenceEn: "Use a dictionary for new words.", sentenceAr: "استخدم القاموس للكلمات الجديدة." },
+            { ar: "براية", en: "pencil sharpener", sentenceEn: "I need a pencil sharpener.", sentenceAr: "أحتاج إلى براية أقلام." },
+            { ar: "سبورة بيضاء", en: "white board", sentenceEn: "Clean the white board, please.", sentenceAr: "نظف السبورة البيضاء من فضلك." },
+            { ar: "مصباح / أباجورة", en: "lamp", sentenceEn: "Turn on the desk lamp.", sentenceAr: "شغّل مصباح المكتب." },
+            { ar: "سطح / سقف", en: "roof", sentenceEn: "The cat is on the roof.", sentenceAr: "القطة على السطح." },
+            { ar: "كشكول / دفتر", en: "notebook", sentenceEn: "Write the notes in your notebook.", sentenceAr: "اكتب الملاحظات في كشكولك." },
+            { ar: "قلم حبر", en: "ink pen", sentenceEn: "I signed the paper with an ink pen.", sentenceAr: "وقعت الورقة بقلم حبر." },
+
+            // الملابس والأدوات المضافة
+            { ar: "معطف / معطف ثقيل", en: "coat", sentenceEn: "Wear your coat, it is cold.", sentenceAr: "ارتدِ معطفك، الجو بارد." },
+            { ar: "قميص", en: "shirt", sentenceEn: "He is wearing a white shirt.", sentenceAr: "هو يرتدي قميصاً أبيض." },
+            { ar: "بدلة", en: "suit", sentenceEn: "He wore a black suit.", sentenceAr: "ارتدى بدلة سوداء." },
+            { ar: "ربطة عنق (كرافتة)", en: "tie", sentenceEn: "He is wearing a red tie.", sentenceAr: "هو يرتدي ربطة عنق حمراء." },
+            { ar: "ربطة عنق فراشة", en: "bow tie", sentenceEn: "A bow tie looks elegant.", sentenceAr: "ربطة العنق الفراشة تبدو أنيقة." },
+            { ar: "جيليه / سترة بدون أكمام", en: "vest", sentenceEn: "He wears a vest under his jacket.", sentenceAr: "يرتدي سترة بدون أكمام تحت الجاكيت." },
+            { ar: "تنورة / جيبة", en: "skirt", sentenceEn: "She bought a new skirt.", sentenceAr: "اشترت تنورة جديدة." },
+            { ar: "خياطة / يخيط", en: "sew", sentenceEn: "She can sew beautiful clothes.", sentenceAr: "يمكنها خياطة ملابس جميلة." },
+            { ar: "جاكيت", en: "jacket", sentenceEn: "Take your jacket with you.", sentenceAr: "خذ جاكيتك معك." },
+            { ar: "بنطال / بنطلون", en: "a pair of pants", sentenceEn: "I bought a new pair of pants.", sentenceAr: "اشتريت بنطالاً جديداً." },
+            { ar: "زي موحد (زي رسمي)", en: "uniform", sentenceEn: "Students wear a school uniform.", sentenceAr: "يرتدي الطلاب زياً مدرسياً موحداً." },
+            { ar: "سويت شيرت", en: "sweatshirt", sentenceEn: "This sweatshirt is very warm.", sentenceAr: "هذا السويت شيرت دافئ جداً." },
+            { ar: "سترة صوفية (بلوفر)", en: "sweater", sentenceEn: "My grandmother knitted a sweater.", sentenceAr: "حاكت جدي سترة صوفية." },
+            { ar: "حذاء طويل (بسطار / جزمة)", en: "boots", sentenceEn: "He is wearing brown boots.", sentenceAr: "يرتدي حذاءً طويلاً بنياً." }
+        ];
+
+        let currentIndex = 0;
+        let currentWord = {};
+
+        function startQuiz() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+            loadQuestion();
+        }
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function loadQuestion() {
+            // إعادة ضبط الشاشة
+            document.getElementById('typing-section').style.display = 'none';
+            document.getElementById('example-box').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('user-input').value = '';
+            document.getElementById('user-input').disabled = false;
+
+            // تحديث شريط التقدم
+            let progressPercent = ((currentIndex + 1) / dictionary.length) * 100;
+            document.getElementById('progress').style.width = progressPercent + '%';
+
+            currentWord = dictionary[currentIndex];
+            document.getElementById('question-text').innerText = `ما معنى كلمة "${currentWord.ar}" بالإنجليزي؟`;
+
+            // تجهيز خيارات الإجابة
+            let options = [currentWord.en];
+            
+            // اختيار 3 خيارات عشوائية خطأ
+            while (options.length < 4) {
+                let randomWord = dictionary[Math.floor(Math.random() * dictionary.length)].en;
+                if (!options.includes(randomWord)) {
+                    options.push(randomWord);
+                }
+            }
+            
+            options = shuffle(options);
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = option;
+                btn.onclick = () => checkAnswer(option, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedOption, btn) {
+            if (selectedOption === currentWord.en) {
+                // إجابة صحيحة
+                document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+                btn.style.backgroundColor = '#4caf50';
+                btn.style.borderColor = '#4caf50';
+                
+                // إظهار قسم الإملاء وإعادة الكتابة
+                document.getElementById('typing-section').style.display = 'block';
+                document.getElementById('user-input').focus();
+            } else {
+                // إجابة خاطئة
+                btn.style.backgroundColor = '#f44336';
+                btn.style.borderColor = '#f44336';
+            }
+        }
+
+        // التحقق عند الكتابة في الخانة
+        document.getElementById('user-input').addEventListener('input', function(e) {
+            let typedText = e.target.value.trim().toLowerCase();
+            if (typedText === currentWord.en.toLowerCase()) {
+                this.disabled = true;
+                
+                // إظهار المثال
+                document.getElementById('example-en').innerText = currentWord.sentenceEn;
+                document.getElementById('example-ar').innerText = currentWord.sentenceAr;
+                document.getElementById('example-box').style.display = 'block';
+                
+                // إظهار زر التالي
+                document.getElementById('next-btn').style.display = 'block';
+            }
+        });
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < dictionary.length) {
+                loadQuestion();
+            } else {
+                alert('ألف مبروك يا وحش! لقد أكملت كافة الكلمات بنجاح 💪🔥');
+                currentIndex = 0;
+                startQuiz();
+            }
+        }
+    </script>
+</body>
+</html>
