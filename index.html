@@ -33,7 +33,7 @@
             text-align: center;
         }
 
-        /* الصفحة الرئيسية */
+        /* الشاشة الرئيسية */
         #welcome-screen {
             padding: 60px 20px;
             background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
@@ -67,10 +67,9 @@
         .btn-main:hover {
             background-color: #45a049;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
         }
 
-        /* صفحة الأسئلة */
+        /* شاشة الاختبار */
         #quiz-screen {
             display: none;
             padding: 30px 20px;
@@ -121,24 +120,44 @@
             background-color: #333;
         }
 
-        /* مرحلة الكتابة والمثال */
+        /* قسم إعادة الكتابة والصوت */
         #typing-section {
             display: none;
             margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #333;
+            padding-top: 10px;
+        }
+
+        .audio-btn {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .audio-btn:hover {
+            background-color: #e68a00;
         }
 
         .success-text {
             color: #4caf50;
             font-weight: bold;
             margin-bottom: 15px;
+            font-size: 1.2rem;
         }
 
         input[type="text"] {
             width: 80%;
             padding: 12px;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             border-radius: 8px;
             border: 2px solid #4caf50;
             background-color: #121212;
@@ -158,16 +177,12 @@
             border-radius: 4px;
         }
 
-        .example-box p {
-            margin: 5px 0;
-            font-size: 1rem;
-        }
-
         .example-en {
             direction: ltr;
             text-align: left;
             color: #ffeb3b;
             font-weight: bold;
+            font-size: 1.1rem;
         }
 
         .btn-next {
@@ -201,14 +216,19 @@
                 <div class="progress" id="progress"></div>
             </div>
 
-            <div class="question-box">
+            <div class="question-box" id="question-box">
                 <h2 id="question-text">ما معنى كلمة ...؟</h2>
                 <div class="options-grid" id="options-container"></div>
             </div>
 
             <div id="typing-section">
                 <p class="success-text">إجابة صحيحة! أحسنت 🔥</p>
-                <p>أعد صياغة/كتابة الكلمة بالإنجليزية لتأكيد الحفظ:</p>
+                
+                <button class="audio-btn" onclick="speakWord()">
+                    🔊 استمع للنطق الأمريكي
+                </button>
+
+                <p style="margin-bottom: 10px;">الان اكتب الكلمة بالإنجليزية لتأكيد الحفظ (بدون الغش):</p>
                 <input type="text" id="user-input" placeholder="اكتب الكلمة هنا..." autocomplete="off">
                 
                 <div class="example-box" id="example-box">
@@ -223,8 +243,7 @@
     </div>
 
     <script>
-        // قائمة الكلمات الكاملة المطلوبة
-        const dictionary = [
+        const originalDictionary = [
             // الصفات
             { ar: "غضبان", en: "angry", sentenceEn: "He was very angry with me.", sentenceAr: "كان غاضباً جداً مني." },
             { ar: "جميل", en: "beautiful", sentenceEn: "She lives in a beautiful house.", sentenceAr: "هي تعيش في منزل جميل." },
@@ -305,7 +324,7 @@
             { ar: "يوسفي", en: "tangerine", sentenceEn: "Tangerine is easy to peel.", sentenceAr: "اليوسفي سهل التقشير." },
             { ar: "كرز", en: "cherries", sentenceEn: "The cherries are dark red.", sentenceAr: "الكرز أحمر داكن." },
 
-            // الأدوات المنزلية والأثاث والمدرسة
+            // الأثاث والمدرسة
             { ar: "طاولة", en: "table", sentenceEn: "The book is on the table.", sentenceAr: "الكتاب على الطاولة." },
             { ar: "مروحة", en: "fan", sentenceEn: "Turn on the fan, please.", sentenceAr: "شغّل المروحة من فضلك." },
             { ar: "كنب / أريكة", en: "couch sofa", sentenceEn: "We sat on the couch sofa.", sentenceAr: "جلسنا على الكنبة." },
@@ -328,38 +347,45 @@
             { ar: "كشكول / دفتر", en: "notebook", sentenceEn: "Write the notes in your notebook.", sentenceAr: "اكتب الملاحظات في كشكولك." },
             { ar: "قلم حبر", en: "ink pen", sentenceEn: "I signed the paper with an ink pen.", sentenceAr: "وقعت الورقة بقلم حبر." },
 
-            // الملابس والأدوات المضافة
-            { ar: "معطف / معطف ثقيل", en: "coat", sentenceEn: "Wear your coat, it is cold.", sentenceAr: "ارتدِ معطفك، الجو بارد." },
+            // الملابس
+            { ar: "معطف", en: "coat", sentenceEn: "Wear your coat, it is cold.", sentenceAr: "ارتدِ معطفك، الجو بارد." },
             { ar: "قميص", en: "shirt", sentenceEn: "He is wearing a white shirt.", sentenceAr: "هو يرتدي قميصاً أبيض." },
             { ar: "بدلة", en: "suit", sentenceEn: "He wore a black suit.", sentenceAr: "ارتدى بدلة سوداء." },
-            { ar: "ربطة عنق (كرافتة)", en: "tie", sentenceEn: "He is wearing a red tie.", sentenceAr: "هو يرتدي ربطة عنق حمراء." },
+            { ar: "ربطة عنق", en: "tie", sentenceEn: "He is wearing a red tie.", sentenceAr: "هو يرتدي ربطة عنق حمراء." },
             { ar: "ربطة عنق فراشة", en: "bow tie", sentenceEn: "A bow tie looks elegant.", sentenceAr: "ربطة العنق الفراشة تبدو أنيقة." },
-            { ar: "جيليه / سترة بدون أكمام", en: "vest", sentenceEn: "He wears a vest under his jacket.", sentenceAr: "يرتدي سترة بدون أكمام تحت الجاكيت." },
-            { ar: "تنورة / جيبة", en: "skirt", sentenceEn: "She bought a new skirt.", sentenceAr: "اشترت تنورة جديدة." },
+            { ar: "جيليه / سترة", en: "vest", sentenceEn: "He wears a vest under his jacket.", sentenceAr: "يرتدي سترة بدون أكمام تحت الجاكيت." },
+            { ar: "تنورة", en: "skirt", sentenceEn: "She bought a new skirt.", sentenceAr: "اشترت تنورة جديدة." },
             { ar: "خياطة / يخيط", en: "sew", sentenceEn: "She can sew beautiful clothes.", sentenceAr: "يمكنها خياطة ملابس جميلة." },
             { ar: "جاكيت", en: "jacket", sentenceEn: "Take your jacket with you.", sentenceAr: "خذ جاكيتك معك." },
-            { ar: "بنطال / بنطلون", en: "a pair of pants", sentenceEn: "I bought a new pair of pants.", sentenceAr: "اشتريت بنطالاً جديداً." },
-            { ar: "زي موحد (زي رسمي)", en: "uniform", sentenceEn: "Students wear a school uniform.", sentenceAr: "يرتدي الطلاب زياً مدرسياً موحداً." },
+            { ar: "بنطال", en: "a pair of pants", sentenceEn: "I bought a new pair of pants.", sentenceAr: "اشتريت بنطالاً جديداً." },
+            { ar: "زي موحد", en: "uniform", sentenceEn: "Students wear a school uniform.", sentenceAr: "يرتدي الطلاب زياً مدرسياً موحداً." },
             { ar: "سويت شيرت", en: "sweatshirt", sentenceEn: "This sweatshirt is very warm.", sentenceAr: "هذا السويت شيرت دافئ جداً." },
-            { ar: "سترة صوفية (بلوفر)", en: "sweater", sentenceEn: "My grandmother knitted a sweater.", sentenceAr: "حاكت جدي سترة صوفية." },
-            { ar: "حذاء طويل (بسطار / جزمة)", en: "boots", sentenceEn: "He is wearing brown boots.", sentenceAr: "يرتدي حذاءً طويلاً بنياً." }
+            { ar: "سترة صوفية", en: "sweater", sentenceEn: "My grandmother knitted a sweater.", sentenceAr: "حاكت جدي سترة صوفية." },
+            { ar: "حذاء طويل", en: "boots", sentenceEn: "He is wearing brown boots.", sentenceAr: "يرتدي حذاءً طويلاً بنياً." }
         ];
 
+        let dictionary = [];
         let currentIndex = 0;
         let currentWord = {};
 
+        // دالة الخلط العشوائي
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
         function startQuiz() {
+            // خلط قائمة الكلمات بالكامل لجعل الأسئلة عشوائية في كل مرة
+            dictionary = shuffle([...originalDictionary]);
+            currentIndex = 0;
+            
             document.getElementById('welcome-screen').style.display = 'none';
             document.getElementById('quiz-screen').style.display = 'block';
             loadQuestion();
         }
 
-        function shuffle(array) {
-            return array.sort(() => Math.random() - 0.5);
-        }
-
         function loadQuestion() {
-            // إعادة ضبط الشاشة
+            // إظهار خيارات السؤال
+            document.getElementById('question-box').style.display = 'block';
             document.getElementById('typing-section').style.display = 'none';
             document.getElementById('example-box').style.display = 'none';
             document.getElementById('next-btn').style.display = 'none';
@@ -373,10 +399,8 @@
             currentWord = dictionary[currentIndex];
             document.getElementById('question-text').innerText = `ما معنى كلمة "${currentWord.ar}" بالإنجليزي؟`;
 
-            // تجهيز خيارات الإجابة
+            // خلط الخيارات
             let options = [currentWord.en];
-            
-            // اختيار 3 خيارات عشوائية خطأ
             while (options.length < 4) {
                 let randomWord = dictionary[Math.floor(Math.random() * dictionary.length)].en;
                 if (!options.includes(randomWord)) {
@@ -400,12 +424,13 @@
 
         function checkAnswer(selectedOption, btn) {
             if (selectedOption === currentWord.en) {
-                // إجابة صحيحة
-                document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
-                btn.style.backgroundColor = '#4caf50';
-                btn.style.borderColor = '#4caf50';
+                // نطق الكلمة فور اختيار الإجابة الصحيحة
+                speakWord();
+
+                // إخفاء خيارات الأسئلة والكلمات لعدم الغش!
+                document.getElementById('question-box').style.display = 'none';
                 
-                // إظهار قسم الإملاء وإعادة الكتابة
+                // إظهار قسم الإملاء الصوت والكتّابة
                 document.getElementById('typing-section').style.display = 'block';
                 document.getElementById('user-input').focus();
             } else {
@@ -415,13 +440,23 @@
             }
         }
 
+        // دالة نطق الكلمة باللكنة الأمريكية
+        function speakWord() {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(currentWord.en);
+                utterance.lang = 'en-US'; // اللكنة الأمريكية
+                utterance.rate = 0.9; // سرعة معتدلة وواضحة
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
         // التحقق عند الكتابة في الخانة
         document.getElementById('user-input').addEventListener('input', function(e) {
             let typedText = e.target.value.trim().toLowerCase();
             if (typedText === currentWord.en.toLowerCase()) {
                 this.disabled = true;
                 
-                // إظهار المثال
+                // إظهار المثال والجملة
                 document.getElementById('example-en').innerText = currentWord.sentenceEn;
                 document.getElementById('example-ar').innerText = currentWord.sentenceAr;
                 document.getElementById('example-box').style.display = 'block';
@@ -436,8 +471,7 @@
             if (currentIndex < dictionary.length) {
                 loadQuestion();
             } else {
-                alert('ألف مبروك يا وحش! لقد أكملت كافة الكلمات بنجاح 💪🔥');
-                currentIndex = 0;
+                alert('ألف مبروك يا وحش! أتممت كل الكلمات بنجاح 🔥💪');
                 startQuiz();
             }
         }
