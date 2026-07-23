@@ -131,13 +131,14 @@
             background-color: #ff9800;
             color: white;
             border: none;
-            padding: 10px 20px;
-            font-size: 1rem;
+            padding: 12px 24px;
+            font-size: 1.1rem;
             border-radius: 25px;
             cursor: pointer;
             margin-bottom: 20px;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             font-weight: bold;
             transition: 0.2s;
@@ -151,12 +152,12 @@
             color: #4caf50;
             font-weight: bold;
             margin-bottom: 15px;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
         }
 
         input[type="text"] {
-            width: 80%;
-            padding: 12px;
+            width: 85%;
+            padding: 14px;
             font-size: 1.2rem;
             border-radius: 8px;
             border: 2px solid #4caf50;
@@ -189,12 +190,14 @@
             background-color: #2196F3;
             color: white;
             border: none;
-            padding: 12px 25px;
-            font-size: 1rem;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
             display: none;
-            margin: 0 auto;
+            margin: 15px auto 0 auto;
+            width: 85%;
         }
 
         .btn-next:hover {
@@ -225,11 +228,11 @@
                 <p class="success-text">إجابة صحيحة! أحسنت 🔥</p>
                 
                 <button class="audio-btn" onclick="speakWord()">
-                    🔊 استمع للنطق الأمريكي
+                    🔊 استمع للنطق الأمريكي (صوت طبيعي)
                 </button>
 
-                <p style="margin-bottom: 10px;">الان اكتب الكلمة بالإنجليزية لتأكيد الحفظ (بدون الغش):</p>
-                <input type="text" id="user-input" placeholder="اكتب الكلمة هنا..." autocomplete="off">
+                <p style="margin-bottom: 10px; color: #ddd;">الآن اكتب الكلمة بالإنجليزي لتأكيد الحفظ (بدون الغش):</p>
+                <input type="text" id="user-input" placeholder="اكتب الكلمة الصحيحة هنا..." autocomplete="off">
                 
                 <div class="example-box" id="example-box">
                     <p><strong>مثال على الجملة:</strong></p>
@@ -368,13 +371,11 @@
         let currentIndex = 0;
         let currentWord = {};
 
-        // دالة الخلط العشوائي
         function shuffle(array) {
             return array.sort(() => Math.random() - 0.5);
         }
 
         function startQuiz() {
-            // خلط قائمة الكلمات بالكامل لجعل الأسئلة عشوائية في كل مرة
             dictionary = shuffle([...originalDictionary]);
             currentIndex = 0;
             
@@ -384,7 +385,6 @@
         }
 
         function loadQuestion() {
-            // إظهار خيارات السؤال
             document.getElementById('question-box').style.display = 'block';
             document.getElementById('typing-section').style.display = 'none';
             document.getElementById('example-box').style.display = 'none';
@@ -392,14 +392,12 @@
             document.getElementById('user-input').value = '';
             document.getElementById('user-input').disabled = false;
 
-            // تحديث شريط التقدم
             let progressPercent = ((currentIndex + 1) / dictionary.length) * 100;
             document.getElementById('progress').style.width = progressPercent + '%';
 
             currentWord = dictionary[currentIndex];
             document.getElementById('question-text').innerText = `ما معنى كلمة "${currentWord.ar}" بالإنجليزي؟`;
 
-            // خلط الخيارات
             let options = [currentWord.en];
             while (options.length < 4) {
                 let randomWord = dictionary[Math.floor(Math.random() * dictionary.length)].en;
@@ -424,44 +422,63 @@
 
         function checkAnswer(selectedOption, btn) {
             if (selectedOption === currentWord.en) {
-                // نطق الكلمة فور اختيار الإجابة الصحيحة
                 speakWord();
 
-                // إخفاء خيارات الأسئلة والكلمات لعدم الغش!
                 document.getElementById('question-box').style.display = 'none';
-                
-                // إظهار قسم الإملاء الصوت والكتّابة
                 document.getElementById('typing-section').style.display = 'block';
                 document.getElementById('user-input').focus();
             } else {
-                // إجابة خاطئة
                 btn.style.backgroundColor = '#f44336';
                 btn.style.borderColor = '#f44336';
             }
         }
 
-        // دالة نطق الكلمة باللكنة الأمريكية
+        // دالة نطق الكلمة بصوت رجل أمريكي طبيعي
         function speakWord() {
             if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // إيقاف أي صوت سابق
                 const utterance = new SpeechSynthesisUtterance(currentWord.en);
-                utterance.lang = 'en-US'; // اللكنة الأمريكية
-                utterance.rate = 0.9; // سرعة معتدلة وواضحة
+                utterance.lang = 'en-US';
+                
+                // البحث عن أصوات الذكور المتاحة في جهازك/متصفحك
+                const voices = window.speechSynthesis.getVoices();
+                const maleVoice = voices.find(voice => 
+                    voice.lang.includes('en') && 
+                    (voice.name.includes('David') || voice.name.includes('Male') || voice.name.includes('George') || voice.name.includes('Natural') || voice.name.includes('Google US English'))
+                );
+
+                if (maleVoice) {
+                    utterance.voice = maleVoice;
+                }
+
+                utterance.pitch = 0.95; // ضبط طبقة الصوت لتصبح أعمق وأشبه بصوت رجل
+                utterance.rate = 0.88; // سرعة نطق طبيعية ومريحة للتعلم
+                
                 window.speechSynthesis.speak(utterance);
             }
+        }
+
+        // إعداد الأصوات مسبقاً
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = function() {
+                window.speechSynthesis.getVoices();
+            };
         }
 
         // التحقق عند الكتابة في الخانة
         document.getElementById('user-input').addEventListener('input', function(e) {
             let typedText = e.target.value.trim().toLowerCase();
+            
+            // عند إدخال الكلمة المطلوبة بالضبط
             if (typedText === currentWord.en.toLowerCase()) {
                 this.disabled = true;
                 
-                // إظهار المثال والجملة
+                // إظهار مثال الجملة
                 document.getElementById('example-en').innerText = currentWord.sentenceEn;
                 document.getElementById('example-ar').innerText = currentWord.sentenceAr;
                 document.getElementById('example-box').style.display = 'block';
                 
-                // إظهار زر التالي
+                // إظهار زر "السؤال التالي"
                 document.getElementById('next-btn').style.display = 'block';
             }
         });
